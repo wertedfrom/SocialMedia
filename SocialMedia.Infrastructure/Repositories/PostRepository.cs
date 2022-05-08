@@ -1,61 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SocialMedia.Core.Entities;
+﻿using SocialMedia.Core.Entities;
 using SocialMedia.Core.Interfaces;
 using SocialMedia.Infrastructure.Data;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialMedia.Infrastructure.Repositories
 {
-    public class PostRepository : IPostRepository
+    public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-        private readonly SocialMediaContext _context;
-        public PostRepository(SocialMediaContext context)
+        public PostRepository(SocialMediaContext context) : base(context) { }
+
+        public async Task<IEnumerable<Post>> GetPostsByUser(int userId)
         {
-            _context = context;
-        }
-
-        public async Task<IEnumerable<Post>> GetPosts()
-        {
-            var posts = await _context.Posts.ToListAsync();
-
-            return posts;
-        }
-
-        public async Task<Post> GetPost(int id)
-        {
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == id);
-
-            return post;
-        }
-
-        public async Task InsertPost(Post post)
-        {
-            _context.Posts.Add(post);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<bool> UpdatePost(Post post)
-        {
-            var currentPost = await GetPost(post.PostId);
-            currentPost.Date = post.Date;
-            currentPost.Description = post.Description;
-            currentPost.Image = post.Image;
-
-            int rows = await _context.SaveChangesAsync();
-            return rows > 0; 
-        }
-
-        public async Task<bool>DeletePost(int id)
-        {
-            var currentPost = await GetPost(id);
-            _context.Posts.Remove(currentPost);
-
-            int rows = await _context.SaveChangesAsync();
-            return rows > 0;
+            return await _entities.Where(x => x.UserId == userId).ToListAsync();
         }
     }
 }
